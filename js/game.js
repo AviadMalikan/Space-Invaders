@@ -14,19 +14,23 @@ const SKY = 'SKY'
 var gBoard;
 var gGame = {
     isOn: true,
-    aliensCount: 0
+    aliensCount: 0,
+    score: 0,
 }
-// Called when game loads
+
 function initGame() {
     console.log('LETS PLAY')
     gBoard = createBoard()
     createHero()
     createLaser()
+    createAliens(gBoard)
     renderBoard(gBoard, '.board-container')
     console.log('gBoard: ', gBoard)
     shoot()
-  
+    // setTimeout(() => shiftBoardRight(gBoard), 2000)
+
 }
+
 // Create and returns the board with aliens on top, ground at bottom
 // use the functions: createCell, createHero, createAliens
 function createBoard() {
@@ -39,8 +43,6 @@ function createBoard() {
             if (i === size - 1) board[i][j].type = FLOOR
         }
     }
-
-    // board[1][1].gameObject = ALIEN
     return board
 }
 
@@ -55,7 +57,6 @@ function renderBoard(mat, selector) {
             const isSky = (cell.type === SKY) ? 'sky' : ''
             const isFloor = (cell.type === FLOOR) ? ' floor' : ''
             strHTML += `<td class="${className} ${isSky} ${isFloor}">`
-
             switch (cell.gameObject) {
                 case HERO:
                     strHTML += HERO
@@ -64,13 +65,11 @@ function renderBoard(mat, selector) {
                     strHTML += ALIEN
                     break
             }
-
             strHTML += `</td >`
         }
         strHTML += '</tr>'
     }
     strHTML += '</tbody></table>'
-
     const elContainer = document.querySelector(selector)
     elContainer.innerHTML = strHTML
 }

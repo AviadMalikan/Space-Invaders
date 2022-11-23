@@ -25,6 +25,7 @@ function getNextLocation(key) {
 
     switch (key) {
         case 'ArrowLeft':
+
             nextPos.j -= 1
             // console.log('hey')
             break
