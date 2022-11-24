@@ -12,23 +12,51 @@ const SKY = 'SKY'
 
 // Matrix of cell objects. e.g.: {type: SKY, gameObject: ALIEN}
 var gBoard;
-var gGame = {
-    isOn: true,
-    aliensCount: 0,
-    score: 0,
-}
+var gGame
 
 function initGame() {
     console.log('LETS PLAY')
     gBoard = createBoard()
+    restartValues()
+    renderBoard(gBoard, '.board-container')
+    // shoot()
+}
+
+function startGame() {
+    initGame()
+    document.querySelector('h4').classList.add('hide')
+    gGame.isOn = true
+    gAliens.interval = setInterval(moveAliens, ALIEN_SPEED)
+    document.querySelector('button').innerText = 'click to reset'
+}
+
+function restartValues() {
+    gGame = {
+        isOn: false,
+        aliensCount: 0,
+        score: 0,
+        isWin: false,
+    }
     createHero()
     createLaser()
+    clearInterval(gAliens.interval)
+    clearInterval(gLaser.interval)
     createAliens(gBoard)
-    renderBoard(gBoard, '.board-container')
-    console.log('gBoard: ', gBoard)
-    shoot()
-    // setTimeout(() => shiftBoardRight(gBoard), 2000)
+}
 
+function updateScore(num) {
+    gGame.score += num
+    document.querySelector('h2 span').innerText = gGame.score
+}
+
+function gameOver(winOrLose) {
+    gGame.isOn = false
+    gGame.isWin = winOrLose || false
+    var msg = gGame.isWin ? 'YOU WIN!' : 'YOU LOSE :('
+
+
+    clearInterval(gAliens.interval)
+    setTimeout(() => alert(`${msg}`), 20)
 }
 
 // Create and returns the board with aliens on top, ground at bottom
@@ -73,5 +101,3 @@ function renderBoard(mat, selector) {
     const elContainer = document.querySelector(selector)
     elContainer.innerHTML = strHTML
 }
-
-

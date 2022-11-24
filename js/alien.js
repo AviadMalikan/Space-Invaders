@@ -2,24 +2,33 @@
 
 
 const ALIEN_SPEED = 500;
-var gIntervalAliens;
-var gAliens = []
+var gAliens = {
+    array: [],
+    counter: 0,
+    interval: null,
+    topRowIdx: null,
+    bottomRowIdx: null,
+    rightColIdx: null,
+    leftColIdx: null,
+    isAlienFreeze: false,
+    goRight: true,
+}
 
 // The following two variables represent the part of the matrix (some rows)
 // that we should shift (left, right, and bottom)
 // We need to update those when:
 // (1) shifting down and (2) last alien was cleared from row
 
-var gAliensTopRowIdx;
-var gAliensBottomRowIdx;
-var gIsAlienFreeze = true;
 
 
-
-function createAliens(board) {
+function  createAliens(board) {
     // createAlien(1, 1, gBoard)
-    for (var i = 1; i < 4; i++) {
-        for (var j = 0; j < 6; j++) {
+    var topRow = gAliens.topRowIdx = 0
+    var bottomRow = gAliens.bottomRowIdx = 4
+    var rightCol = gAliens.rightColIdx = 6
+    var leftCol = gAliens.leftColIdx = 0
+    for (var i = topRow; i < bottomRow; i++) {
+        for (var j = leftCol; j < rightCol; j++) {
             createAlien(i, j, board)
         }
     }
@@ -34,77 +43,111 @@ function createAlien(iIdx, jIdx, board) {
         pos: { i: iIdx, j: jIdx },
     }
     board[alien.pos.i][alien.pos.j].gameObject = ALIEN
-    gAliens.push(alien)
-
+    gAliens.array.push(alien)
 }
 
-function handleAlienHit(pos) {
-}
 
 function shiftBoardRight(board, fromI, toI) {
-    // console.log('MOVE!')
-
-    // for (var i = 0; i < gAliens.length; i++) {
-    //     var alien = gAliens[i]
-    //     const nextLocation = {
-    //         i: alien.pos.i,
-    //         j: alien.pos.j + 1
-    //     }
-    //     updateCell(nextLocation, ALIEN)
-    //     updateCell(alien.pos, null)
-    //     alien.pos = nextLocation
-    // }
-
-}
-
-function shiftBoardLeft(board, fromI, toI) { }
-function shiftBoardDown(board, fromI, toI) { }
-
-
-
-// runs the interval for moving aliens side to side and down
-// it re-renders the board every time
-// when the aliens are reaching the hero row - interval stops
-function moveAliens() {
-    for (var i = 0; i < gAliens.length; i++) {
-        const alien = gAliens[i]
-        // moveAlien(alien)
-    }
-}
-
-// function moveAlien(alien) {
-//     const moveDiff = getMoveDiff()
-//     const nextLocation = {
-//         i: alien.pos.i + moveDiff.i,
-//         j: alien.pos.j + moveDiff.j,
-//     }
-//     const nextCell = gBoard[nextLocation.i][nextLocation]
-
-
-
-//     updateCell(alien.pos, null)
-//     updateCell(nextLocation, ALIEN)
-//     nextCell.gameObject = ALIEN
-// }
-
-
-
-// function foundAlienIdx(pos) {
-//     for (var i = 0; i < gAliens.length; i++) {
-//         var alien = gAliens[i]
-//         if (alien.pos.i === pos.i && alien.pos.j === pos.j) return i
-//     }
-//     return -1
-// }
-
-function removeAlien(pos) {
-    for (var i = 0; i < gAliens.length; i++) {
-        var alien = gAliens[i]
-        console.log('alien: ', alien)
-        if (alien.pos.i === pos.i && alien.pos.j === pos.j) {
-            gAliens.splice(i, 1)
-            return true
+    const right = gAliens.rightColIdx
+    const left = gAliens.leftColIdx
+    gAliens.counter = 0
+    for (var i = toI - 1; i >= fromI; i--) {
+        for (var j = right - 1; j >= left; j--) {
+            var cellPos = { i: i, j: j }
+            var gameObj
+            if (board[i][j].gameObject !== ALIEN) gameObj = null
+            else {
+                gameObj = ALIEN
+                gAliens.counter++
+            }
+            // debugger
+            const nextLocation = {
+                i: i,
+                j: j + 1,
+            }
+            if (board[nextLocation.i][nextLocation.j].gameObject === LASER) gameObj = ALIEN
+            updateCell(nextLocation, gameObj)
+            if (j === left) updateCell(cellPos, null)
         }
     }
-    return false
+    if (gAliens.counter === 0) gameOver(true)
+    gAliens.leftColIdx++
+    gAliens.rightColIdx++
+    // console.log('gAliens.rightColIdx: ', gAliens.rightColIdx)
+    // console.log('gAliens.leftColIdx: ', gAliens.leftColIdx)
 }
+
+function shiftBoardLeft(board, fromI, toI) {
+    const right = gAliens.rightColIdx - 1
+    const left = gAliens.leftColIdx
+    gAliens.counter = 0
+
+    for (var i = fromI; i <= toI + 1; i++) {
+        for (var j = left; j <= right; j++) {
+            var cellPos = { i: i, j: j }
+            // debugger
+            var gameObj = null
+            if (board[i][j].gameObject === ALIEN) {
+                gameObj = ALIEN
+                gAliens.counter++
+            }
+            const nextLocation = {
+                i: i,
+                j: j - 1,
+            }
+            if (board[nextLocation.i][nextLocation.j].gameObject === LASER) gameObj = ALIEN
+
+            updateCell(nextLocation, gameObj)
+            if (j === left) updateCell(cellPos, null)
+            if (j === right) updateCell(cellPos, null)
+        }
+    }
+    if (gAliens.counter === 0) gameOver(true)
+    gAliens.leftColIdx--
+    gAliens.rightColIdx--
+
+}
+
+function shiftBoardDown(board, fromI, toI) {
+    for (var i = toI; i >= fromI; i--) {
+        for (var j = board[0].length - 1; j >= 0; j--) {
+            var cellPos = { i: i, j: j }
+            // debugger
+            var gameObj = (board[i][j].gameObject !== ALIEN) ? null : ALIEN
+            const nextLocation = {
+                i: i + 1,
+                j: j
+            }
+            updateCell(nextLocation, gameObj)
+            if (i === fromI) updateCell(cellPos, null)
+        }
+    }
+    if (gAliens.bottomRowIdx === gHero.pos.i) gameOver()
+    gAliens.bottomRowIdx++
+    gAliens.topRowIdx++
+}
+
+function moveAliens() {
+    if (gAliens.isAlienFreeze) return
+    // debugger
+    if (gAliens.leftColIdx === 0) {
+        shiftBoardDown(gBoard, gAliens.topRowIdx, gAliens.bottomRowIdx)
+        gAliens.goRight = true
+    }
+    if (gAliens.rightColIdx === gBoard[0].length) {
+        gAliens.goRight = false
+        shiftBoardDown(gBoard, gAliens.topRowIdx, gAliens.bottomRowIdx)
+    }
+    if (gAliens.goRight) shiftBoardRight(gBoard, gAliens.topRowIdx, gAliens.bottomRowIdx)
+    else shiftBoardLeft(gBoard, gAliens.topRowIdx, gAliens.bottomRowIdx)
+}
+
+function findAlienIdx(pos) {
+    for (var i = 0; i < gAliens.array.length; i++) {
+        if (gAliens.array[i].pos.i === pos.i && gAliens.array[i].pos.j === pos.j) {
+            return i
+        }
+    }
+    return -1
+}
+
