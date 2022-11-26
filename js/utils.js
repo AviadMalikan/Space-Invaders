@@ -5,6 +5,20 @@ function removeAlien(pos) {
     gAliens.array.splice(idx, 1)
 }
 
+function getEmptyFirstLineCell() {
+    var emptyCells = []
+    console.log('HEY')
+
+    for (var i = 0; i < gBoard[0].length; i++) {
+        var currCell = gBoard[0][i]
+        if (currCell.type === SKY) {
+            var pos = { i: 0, j: i }
+            emptyCells.push(pos)
+        }
+    }
+    return emptyCells[getRandomInt(0, emptyCells.length - 1)]
+}
+
 function createCell(gameObject = null) {
     return {
         type: SKY,
@@ -20,7 +34,6 @@ function updateCell(pos, gameObject = null) {
 
 function getElCell(pos) {
     return document.querySelector(`.cell-${pos.i}-${pos.j}`)
-
 }
 
 function getRandomInt(min, max) { //Inclusive

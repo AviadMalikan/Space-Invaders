@@ -1,12 +1,7 @@
 'use strict'
 
-
-
-const LASER_SPEED = 80;
 var gHero
 
-
-// creates the hero and place it on board
 function createHero(board) {
     gHero = {
         pos: { i: 12, j: 7 },
@@ -17,7 +12,6 @@ function createHero(board) {
 }
 
 
-// Handle game keys
 function getNextLocation(key) {
     const nextPos = {
         i: gHero.pos.i,
@@ -33,13 +27,15 @@ function getNextLocation(key) {
             nextPos.j += 1
             // console.log('hey')
             break
+        case 'x':
+            superMode()
     }
     return nextPos
 }
 
 // Move the hero right (1) or left (-1)
 function moveHero(ev) {
-    if (!gGame.isOn) return    
+    if (!gGame.isOn) return
     shoot(ev)
 
     const nextLocation = getNextLocation(ev.key)
@@ -49,4 +45,17 @@ function moveHero(ev) {
     updateCell(gHero.pos, null)
     updateCell(nextLocation, HERO)
     gHero.pos = nextLocation
+}
+
+
+function superMode() {
+    if (gHero.isSuper) return
+    if (gGame.superAttack === 0) return
+    gHero.isSuper = true
+    gLaser.speed = SUPER_LASER_SPEED
+    setTimeout(() => {
+        gLaser.speed = LASER_SPEED
+        gHero.isSuper = false
+    }, 5000)
+    gGame.superAttack--
 }
